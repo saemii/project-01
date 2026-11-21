@@ -26,7 +26,7 @@ class VAE(nn.Module):
         super().__init__()
 
         # Dimension of the latent variable z
-        self.latent_dim = 32
+        self.latent_dim = 16
 
         # Encoder: (B, 1, 32, 32) -> (B, 128, 4, 4)
         self.encoder = nn.Sequential(

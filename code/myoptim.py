@@ -7,7 +7,7 @@ TODO: choose BATCH_SIZE and NUM_EPOCHS, and complete `get_optimizer`.
 import torch
 
 # Training settings
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 NUM_EPOCHS = 150
 
 
