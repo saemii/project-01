@@ -7,8 +7,8 @@ TODO: choose BATCH_SIZE and NUM_EPOCHS, and complete `get_optimizer`.
 import torch
 
 # Training settings
-BATCH_SIZE = 32
-NUM_EPOCHS = 200
+BATCH_SIZE = 64
+NUM_EPOCHS = 150
 
 
 def get_optimizer(model):
@@ -22,7 +22,7 @@ def get_optimizer(model):
     """
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=0.005
+        lr=0.001
     )
 
     return optimizer
