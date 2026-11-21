@@ -8,7 +8,7 @@ import torch
 
 # Training settings
 BATCH_SIZE = 32
-NUM_EPOCHS = 100
+NUM_EPOCHS = 150
 
 
 def get_optimizer(model):
