@@ -22,7 +22,7 @@ def get_optimizer(model):
     """
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=0.001
+        lr=0.005
     )
 
     return optimizer
