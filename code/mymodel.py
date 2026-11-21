@@ -15,68 +15,100 @@ Notation
     x_hat  : decoded images,           shape (B, 1, 32, 32), values in [0, 1]
 """
 
+"""Variational Autoencoder (VAE) using CNN."""
+
 import torch
 import torch.nn as nn
 
 
 class VAE(nn.Module):
     def __init__(self):
-        """Define the layers of the encoder and of the decoder.
-
-        The notebook creates the model with `VAE()`, so every argument you
-        add needs a default value.
-
-        Must set `self.latent_dim` (int, at least 2): the dimension of z.
-        """
         super().__init__()
-        # TODO: set self.latent_dim and define the layers
-        raise NotImplementedError("mymodel.py: VAE.__init__ is not implemented")
+
+        # Dimension of the latent variable z
+        self.latent_dim = 16
+
+        # Encoder: (B, 1, 32, 32) -> (B, 128, 4, 4)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 64, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.ReLU(),
+
+            nn.Flatten()
+        )
+
+        # Mean and log-variance of q(z|x)
+        self.fc_mu = nn.Linear(128 * 4 * 4, self.latent_dim)
+        self.fc_logvar = nn.Linear(128 * 4 * 4, self.latent_dim)
+
+        # Latent vector -> decoder feature map
+        self.decoder_input = nn.Linear(
+            self.latent_dim, 128 * 4 * 4
+        )
+
+        # Decoder: (B, 128, 4, 4) -> (B, 1, 32, 32)
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(
+                128, 64, kernel_size=4, stride=2, padding=1
+            ),
+            nn.ReLU(),
+
+            nn.ConvTranspose2d(
+                64, 32, kernel_size=4, stride=2, padding=1
+            ),
+            nn.ReLU(),
+
+            nn.ConvTranspose2d(
+                32, 1, kernel_size=4, stride=2, padding=1
+            ),
+            nn.Sigmoid()
+        )
 
     def encode(self, x):
-        """Encoder: parameters of q(z|x) = N(z; mu, diag(exp(logvar))).
+        # Extract image features
+        h = self.encoder(x)
 
-        Args:
-            x: images, shape (B, 1, 32, 32).
+        # Parameters of the latent distribution
+        mu = self.fc_mu(h)
+        logvar = self.fc_logvar(h)
 
-        Returns:
-            (mu, logvar), each of shape (B, latent_dim).
-        """
-        # TODO
-        raise NotImplementedError("mymodel.py: VAE.encode is not implemented")
+        return mu, logvar
 
     def reparameterize(self, mu, logvar):
-        """Draw z ~ N(mu, diag(exp(logvar))) with the reparameterization
-        trick, so that gradients can flow back to mu and logvar.
+        # Standard deviation
+        std = torch.exp(0.5 * logvar)
 
-        Args:
-            mu, logvar: shape (B, latent_dim).
+        # Random noise from N(0, I)
+        eps = torch.randn_like(std)
 
-        Returns:
-            z, shape (B, latent_dim).
-        """
-        # TODO
-        raise NotImplementedError("mymodel.py: VAE.reparameterize is not implemented")
+        # Reparameterization trick
+        z = mu + eps * std
+
+        return z
 
     def decode(self, z):
-        """Decoder: pixel-wise mean of p(x|z).
+        # Convert latent vector into feature map
+        h = self.decoder_input(z)
+        h = h.view(-1, 128, 4, 4)
 
-        Args:
-            z: latent variables, shape (B, latent_dim).
+        # Reconstruct the image
+        x_hat = self.decoder(h)
 
-        Returns:
-            x_hat, shape (B, 1, 32, 32), values in [0, 1].
-        """
-        # TODO
-        raise NotImplementedError("mymodel.py: VAE.decode is not implemented")
+        return x_hat
 
     def forward(self, x):
-        """Encode x, draw z from q(z|x), and decode z.
+        # Encode input image
+        mu, logvar = self.encode(x)
 
-        Args:
-            x: images, shape (B, 1, 32, 32).
+        # Sample latent vector
+        z = self.reparameterize(mu, logvar)
 
-        Returns:
-            (x_hat, mu, logvar).
-        """
-        # TODO
-        raise NotImplementedError("mymodel.py: VAE.forward is not implemented")
+        # Decode latent vector
+        x_hat = self.decode(z)
+
+        return x_hat, mu, logvar

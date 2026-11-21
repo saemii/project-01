@@ -9,6 +9,6 @@ They are used for the name of the result file:
 
 def get_info():
     """Return your name and student ID as a dict of two strings."""
-    name = ""          # TODO: your name
-    student_id = ""    # TODO: your student ID
+    name = "정새미"          # TODO: your name
+    student_id = "20210197"    # TODO: your student ID
     return {"name": name, "student_id": student_id}
